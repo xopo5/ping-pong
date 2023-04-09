@@ -1,4 +1,5 @@
 from pygame import *
+## https://idkru.pythonanywhere.com/code/vavoti
 
 class GameSprite(sprite.Sprite):
     def __init__(self, sprite_image, x=0, y=0, width=50, height=50):
