@@ -1,4 +1,7 @@
 from pygame import *
+from button import Button
+font.init()
+stage = 'menu'
 ## https://idkru.pythonanywhere.com/code/vavoti
 
 class GameSprite(sprite.Sprite):
@@ -56,9 +59,21 @@ player2 = Player('playersprite.png',500,HEIGHT/2-80,40,120,5,K_UP,K_DOWN)
 ball = Ball('ball.png',240,HEIGHT/4,50,50,5)
 run = True
 
+btn_start = Button(y = 200, width=150,height=40,text = 'Начать игру',font_size = 26)
+btn_credits = Button(y = 250, width=150,height=40,text = 'Разработчики',font_size = 26)
+btn_exit = Button(y = 300, width=150,height=40,text = 'Выход',font_size = 26)
+btn_continue = Button(y=200,width=150,height=40,text='Продолжить',font_size = 26)
+btn_to_menu = Button(y=250,width=150,height=40,text='Вернуться в меню',font_size=16)
+btn_restart = Button(y=300,width=150,height=40,text='Рестарт',font_size=26)
+
 dx =3 
 dy=3
-while run:
+def restart():
+    global player1,player2,ball
+    player1 = Player('playersprite.png',10,HEIGHT/2+-80,40,120,5,K_w,K_s)
+    player2 = Player('playersprite.png',500,HEIGHT/2-80,40,120,5,K_UP,K_DOWN)
+    ball = Ball('ball.png',240,HEIGHT/4,50,50,5)
+def game():
     mw.fill(BG_COLOR)
     player1.update()
     player2.update()
@@ -68,10 +83,70 @@ while run:
     ball.player_collide(player1)
     ball.player_collide(player2)
     ball.reset()
-    for e in event.get():
+def menu(events):
+    global stage
+    mw.fill(BG_COLOR)
+    btn_start.update(events)
+    btn_credits.update(events)
+    btn_exit.update(events)
+    btn_start.draw(mw)
+    btn_credits.draw(mw)
+    btn_exit.draw(mw)
+    if btn_exit.is_clicked(events):
+        stage = 'off'
+    if btn_start.is_clicked(events):
+        stage = 'game'
+def pause(events):
+    mw.fill(BG_COLOR)
+    btn_continue.update(events)
+    btn_to_menu.update(events)
+    btn_to_menu.draw(mw)
+    btn_continue.draw(mw)
+    global stage
+    if btn_continue.is_clicked(events):
+        
+        stage = 'game'
+    if btn_to_menu.is_clicked(events):
+        restart()
+        stage = "menu"
+def check_game_status():
+    global stage
+    if ball.rect.x < -ball.rect.width:
+        stage = '2 win'
+    if ball.rect.x > WIDTH:
+        stage = '1 win'
+def win_screen(events):
+    global stage
+    if stage == '2 win':
+        print('Второй игрок победил')
+    elif stage == '1 win':
+        print('Первый игрок победил')
+    btn_restart.update(events)
+    btn_to_menu.update(events)
+    btn_to_menu.draw(mw)
+    btn_restart.draw(mw)
+    if btn_restart.is_clicked(events):
+        restart()
+        stage = 'game'
+    if btn_to_menu.is_clicked(events):
+        stage = 'menu'
+while stage!= 'off':
+    events = event.get()
+    for e in events:
         if e.type == QUIT:
-            run = False
-   
+            stage = 'off'
+        if e.type == KEYDOWN:
+            if e.key == K_ESCAPE:
+                stage = 'pause'
+    if stage == 'menu':
+        menu(events)
+    elif stage == 'game':
+        game()
+        check_game_status()
+    elif stage == 'pause':
+        pause(events)
+    elif stage == '2 win' or stage == '1 win':
+        win_screen(events)
     
     display.update()
     clock.tick(FPS)
